@@ -1,0 +1,35 @@
+version: '3.1'
+services:
+  gitlab:
+    image: 'gitlab/gitlab-ee:latest'
+    restart: always
+    hostname: 'gitlab.example.com'
+    environment:
+      GITLAB_OMNIBUS_CONFIG: |
+        external_url 'https://gitlab.example.com'
+        # Add any other gitlab.rb configuration here, each on its own line
+    ports:
+      - '4242:80'
+    volumes:
+      - '$GITLAB_HOME/config:/etc/gitlab'
+      - '$GITLAB_HOME/logs:/var/log/gitlab'
+      - '$GITLAB_HOME/data:/var/opt/gitlab'
+  reverseproxy:
+    image: reverseproxy
+    ports:
+      - 8080:8080
+      - 8081:8081
+    restart: always
+ 
+  nginx:
+    depends_on:
+      - reverseproxy
+    image: nginx:alpine
+    restart: always
+  db:
+    image: mariadb
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: example
+ 
+  
