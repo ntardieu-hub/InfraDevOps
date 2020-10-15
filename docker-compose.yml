@@ -4,18 +4,11 @@ services:
     image: nginx
     volumes:
       - ./reverse_proxy/nginx.conf:/etc/nginx/nginx.conf
+      - ./www/index.html:/usr/share/nginx/html/index.html
     ports:
       - 80:80
       - 8010:8010
     restart: always
-
-  nginx: 
-    image: nginx:latest
-    depends_on:
-      - reverse-proxy
-    restart: always
-    volumes:
-      - ./www/index.html:/usr/share/nginx/html/index.html
 
   buildbot:
     image: buildbot/buildbot-master:master
