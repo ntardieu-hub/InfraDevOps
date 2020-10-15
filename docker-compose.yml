@@ -34,7 +34,7 @@ services:
 
   db:
     env_file:
-      - builbotDB.env
+      - db.env
     image: "postgres:9.4"
     expose:
       - 5432
