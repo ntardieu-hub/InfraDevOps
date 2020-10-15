@@ -7,6 +7,8 @@ services:
     ports:
       - 80:80
       - 8010:8010
+      - 3000:3000
+      - 9090:9090
     restart: always
 
   nginx: 
@@ -50,3 +52,34 @@ services:
 
     links:
       - buildbot
+
+  prometheus:
+    image: prom/prometheus:latest
+    volumes:
+        - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+    command:
+        - '--config.file=/etc/prometheus/prometheus.yml'
+        - --web.external-url=http://127.0.0.1:9090
+        - --web.route-prefix=/
+    depends_on:
+        - cadvisor
+
+  cadvisor:
+    image: gcr.io/google-containers/cadvisor:latest
+    volumes:
+        - /:/rootfs:ro
+        - /var/run:/var/run:rw
+        - /sys/:/sys/:ro
+        - /var/lib/docker/:/var/lib/docker:ro
+    depends_on:
+      - redis
+
+  redis:
+    image: redis:latest
+
+  grafana:
+    image: grafana/grafana:latest
+    environment:
+        - GF_SECURITY_ADMIN_PASSWORD=admin
+    depends_on:
+        - prometheus
