@@ -83,3 +83,10 @@ services:
         - GF_SECURITY_ADMIN_PASSWORD=admin
     depends_on:
         - prometheus
+
+  sonarqube:
+    image: sonarqube:8.2-community
+    depends_on:
+      - db
+    ports:
+      - 9000:9000
