@@ -1,5 +1,5 @@
 # InfraDevOps
-## Module Ynoc - Culture DevOps
+## Module Ynov - Culture DevOps
 ### Réalisé durant l'année universitaire 2020 / 2021
 
 ### Composition du groupe 

@@ -1,36 +1,37 @@
+# Version Docker
 version: '3.7'
 services:
   reverse-proxy:
-    image: nginx
+    # nom de l'image à pull
+    # :latest -> va pull la dernière version connue
+    image: nginx:latest
+    # les volumes à transférer au container
+    # <chemin de votre fichier>:<chemin de destination dans le container>
     volumes:
       - ./reverse_proxy/nginx.conf:/etc/nginx/nginx.conf
+      - ./www/index.html:/usr/share/nginx/html/index.html
+    # Déclaration & mapping des ports alloués pour le reverse proxy vers les containers
+    # <port de la machine>:<port du container>
     ports:
       - 80:80
-      - 8010:8010
-      - 3000:3000
-      - 9090:9090
+    # En cas de crash, cette propriété demande à Nginx de redémarrer en permanence
     restart: always
-
-  nginx: 
-    image: nginx:latest
-    depends_on:
-      - reverse-proxy
-    restart: always
-    volumes:
-      - ./www/index.html:/usr/share/nginx/html/index.html
 
   buildbot:
     image: buildbot/buildbot-master:master
+    # Déclaration du fichier contenant les variables d'environnements
     env_file:
       - db.env
+    # Déclaration de plusieurs variables d'environnements applicable au container
     environment:
       - BUILDBOT_CONFIG_DIR=config
       - BUILDBOT_CONFIG_URL=https://github.com/buildbot/buildbot-docker-example-config/archive/master.tar.gz
       - BUILDBOT_WORKER_PORT=9989
       - BUILDBOT_WEB_URL=http://127.0.0.1:8010/
       - BUILDBOT_WEB_PORT=tcp:port=8010
-    links:
-      - db
+    ports:
+      - 8010:8010
+    # Déclare quel(s) est (sont) le(s) container(s) dont le courant dépend
     depends_on:
       - db
 
@@ -38,8 +39,8 @@ services:
     env_file:
       - db.env
     image: "postgres:9.4"
-    expose:
-      - 5432
+    ports:
+      - 5432:5432
 
   worker:
     image: "buildbot/buildbot-worker:master"
@@ -50,7 +51,7 @@ services:
       WORKERPASS: pass
       WORKER_ENVIRONMENT_BLACKLIST: DOCKER_BUILDBOT* BUILDBOT_ENV_* BUILDBOT_1* WORKER_ENVIRONMENT_BLACKLIST
 
-    links:
+    depends_on:
       - buildbot
 
   prometheus:
@@ -63,6 +64,8 @@ services:
         - --web.route-prefix=/
     depends_on:
         - cadvisor
+    ports:
+        - 9090:9090
 
   cadvisor:
     image: gcr.io/google-containers/cadvisor:latest
@@ -83,3 +86,5 @@ services:
         - GF_SECURITY_ADMIN_PASSWORD=admin
     depends_on:
         - prometheus
+    ports:
+        - 3000:3000
