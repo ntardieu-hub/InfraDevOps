@@ -1,6 +1,9 @@
 # Version Docker
 version: '3.7'
 services:
+  setup:
+    image: ubuntu
+    build: .
   reverse-proxy:
     # nom de l'image à pull
     # :latest -> va pull la dernière version connue
@@ -107,8 +110,34 @@ services:
         - 3000:3000
 
   sonarqube:
-    image: sonarqube:8.2-community
+    image: sonarqube:7.9-community
+    environment:
+      - SONARQUBE_JDBC_USERNAME=sonar
+      - SONARQUBE_JDBC_PASSWORD=sonar
     depends_on:
-      - db
+      - sonarDb
     ports:
-      - 9000:9000
+      - "9000:9000"
+
+  sonarscanner:
+    container_name: sonarscanner
+    image: newtmitch/sonar-scanner
+    depends_on:
+      - sonarqube
+    environment:
+      - SONAR_PROJECT_KEY=dummy
+      - SONAR_PROJECT_NAME=dummy
+      - SONAR_PROJECT_VERSION=0.1
+    restart: on-failure
+    volumes:
+      - ./src:/usr/src
+      - ./sonarqube/:/usr/lib/sonar-scanner/conf/
+
+  sonarDb:
+    container_name: sonarDb
+    image: postgres
+    environment:
+      - POSTGRES_USER=sonar
+      - POSTGRES_PASSWORD=sonar5433
+    ports:
+        - 5433:5433
