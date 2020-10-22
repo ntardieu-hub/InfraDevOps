@@ -1,0 +1,4 @@
+- targets:
+  - grafana:3000
+  - node-exporter:9100
+  - cadvisor:8080

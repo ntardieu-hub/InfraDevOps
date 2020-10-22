@@ -58,6 +58,7 @@ services:
     image: prom/prometheus:latest
     volumes:
         - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+        - "./prometheus/file_sd_configs.yml:/etc/prometheus/file_sd_configs.yml"
     command:
         - '--config.file=/etc/prometheus/prometheus.yml'
         - --web.external-url=http://127.0.0.1:9090
@@ -67,6 +68,20 @@ services:
     ports:
         - 9090:9090
 
+  node_exporter:
+    image: prom/node-exporter
+    ports:
+        - 9100:9100
+
+  alertmanager:
+    image: prom/alertmanager
+    deploy:
+      replicas: 1
+    volumes:
+      - ./alertmanager/alertmanager.yml:/etc/alertmanager/alertmanager.yml
+    command:
+      - '--config.file=/etc/alertmanager/alertmanager.yml'
+
   cadvisor:
     image: gcr.io/google-containers/cadvisor:latest
     volumes:
@@ -74,6 +89,8 @@ services:
         - /var/run:/var/run:rw
         - /sys/:/sys/:ro
         - /var/lib/docker/:/var/lib/docker:ro
+    ports: 
+      - 8080:8080
     depends_on:
       - redis
 
@@ -88,3 +105,10 @@ services:
         - prometheus
     ports:
         - 3000:3000
+
+  sonarqube:
+    image: sonarqube:8.2-community
+    depends_on:
+      - db
+    ports:
+      - 9000:9000
